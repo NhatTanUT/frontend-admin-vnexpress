@@ -1,0 +1,14 @@
+{
+  "endOfLine":"crlf",
+  "files.eol": "\r\n",
+  "printWidth": 120,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "tabWidth": 2,
+  "prettier/prettier": [
+    "error",
+    {
+      "endOfLine": "auto"
+    }
+  ]
+}
