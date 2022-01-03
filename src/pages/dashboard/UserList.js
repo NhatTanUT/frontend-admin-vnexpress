@@ -109,7 +109,7 @@ export default function UserList() {
             Authorization: `Bearer ${token}`
           }
         });
-        // console.log(temp.data.users);
+        console.log(temp.data.users);
         setUser1(temp.data.users);
       } catch (error) {
         console.log(error);
@@ -277,7 +277,7 @@ export default function UserList() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={userList.length}
+            count={userList1.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

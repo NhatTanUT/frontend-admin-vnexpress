@@ -2,8 +2,9 @@ import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { useCallback } from 'react';
 import { useSnackbar } from 'notistack5';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Form, FormikProvider, useFormik } from 'formik';
+import axios from 'axios';
 // material
 import { LoadingButton } from '@material-ui/lab';
 import {
@@ -27,6 +28,7 @@ import Label from '../../Label';
 import { UploadAvatar } from '../../upload';
 import countries from './countries';
 
+const roles = ['user', 'admin'];
 // ----------------------------------------------------------------------
 
 UserNewForm.propTypes = {
@@ -37,6 +39,7 @@ UserNewForm.propTypes = {
 export default function UserNewForm({ isEdit, currentUser }) {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const { name } = useParams();
 
   const NewUserSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
@@ -48,7 +51,7 @@ export default function UserNewForm({ isEdit, currentUser }) {
     state: Yup.string().required('State is required'),
     city: Yup.string().required('City is required'),
     role: Yup.string().required('Role Number is required'),
-    avatarUrl: Yup.mixed().required('Avatar is required')
+    avatarUrl: Yup.mixed()
   });
 
   const formik = useFormik({
@@ -72,6 +75,7 @@ export default function UserNewForm({ isEdit, currentUser }) {
     // Create user or Edit user
     onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
       try {
+        console.log(values);
         await fakeRequest(500);
         resetForm();
         setSubmitting(false);
@@ -90,9 +94,10 @@ export default function UserNewForm({ isEdit, currentUser }) {
   const handleDrop = useCallback(
     (acceptedFiles) => {
       const file = acceptedFiles[0];
+      values.avatarUrl = file;
       if (file) {
         setFieldValue('avatarUrl', {
-          ...file,
+          file,
           preview: URL.createObjectURL(file)
         });
       }
@@ -100,9 +105,92 @@ export default function UserNewForm({ isEdit, currentUser }) {
     [setFieldValue]
   );
 
+  const handleSubmit1 = async (event) => {
+    event.preventDefault();
+    try {
+      // console.log(values);
+      if (!isEdit) {
+        const name = event.target.name.value;
+        const email = event.target.email.value;
+        const password = event.target.password.value;
+        const confirmPassword = event.target.confirmPassword.value;
+        // const role = event.target.role.value;
+        // console.log(event.target.name.value);
+        // console.log(event.target.email.value);
+        // console.log(event.target.role.value);
+        // console.log(event.target.password.value);
+        // console.log(event.target.confirmPassword.value);
+        if (event.target.role.value === 'user') {
+          const response = await axios.post('http://localhost:5000/api/user/signUp', {
+            name,
+            email,
+            password,
+            confirmPassword
+          });
+          console.log(response.data);
+          if (response.data.success) {
+            enqueueSnackbar(!isEdit ? 'Create success' : 'Update success', { variant: 'success' });
+          } else {
+            console.log(response.data.msg);
+          }
+        } else if (event.target.role.value === 'admin') {
+          const token = window.localStorage.getItem('accessToken');
+          const response = await axios.post(
+            'http://localhost:5000/api/user/signUpForAdmin',
+            {
+              name,
+              email,
+              password,
+              confirmPassword
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+          console.log(response.data);
+          if (response.data.success) {
+            enqueueSnackbar(!isEdit ? 'Create success' : 'Update success', { variant: 'success' });
+          } else {
+            console.log(response.data.msg);
+          }
+        }
+      } else if (isEdit) {
+        const name1 = event.target.name.value;
+        const email = event.target.email.value;
+        const password = event.target.password.value;
+        const confirmPassword = event.target.confirmPassword.value;
+        const role = event.target.role.value;
+        const token = window.localStorage.getItem('accessToken');
+        let avatar = {};
+        const bodyFormData = new FormData();
+        if (values.avatarUrl) {
+          avatar = values.avatarUrl.file;
+          bodyFormData.append('avatar', avatar);
+        }
+        bodyFormData.append('name', name1);
+        bodyFormData.append('email', email);
+        bodyFormData.append('password', password);
+        bodyFormData.append('confirmPassword', confirmPassword);
+        bodyFormData.append('role', role);
+
+        const response = await axios.patch(`http://localhost:5000/api/user/update/${name}`, bodyFormData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.data.success) {
+          enqueueSnackbar('Update success', { variant: 'success' });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <FormikProvider value={formik}>
-      <Form noValidate autoComplete="off" onSubmit={handleSubmit}>
+      <Form noValidate autoComplete="off" onSubmit={handleSubmit1}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <Card sx={{ py: 10, px: 3 }}>
@@ -262,6 +350,29 @@ export default function UserNewForm({ isEdit, currentUser }) {
                 </Stack> */}
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 3, sm: 2 }}>
+                  <TextField
+                    hintText="Password"
+                    floatingLabelText="Password"
+                    type="password"
+                    fullWidth
+                    label="Password"
+                    {...getFieldProps('password')}
+                    error={Boolean(touched.password && errors.password)}
+                    helperText={touched.password && errors.password}
+                  />
+                  <TextField
+                    hintText="Confirm password"
+                    floatingLabelText="confirmPassword"
+                    type="password"
+                    fullWidth
+                    label="Confirm password"
+                    {...getFieldProps('confirmPassword')}
+                    error={Boolean(touched.confirmPassword && errors.confirmPassword)}
+                    helperText={touched.confirmPassword && errors.confirmPassword}
+                  />
+                </Stack>
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 3, sm: 2 }}>
                   {/* <TextField
                     fullWidth
                     label="Company"
@@ -288,9 +399,9 @@ export default function UserNewForm({ isEdit, currentUser }) {
                     helperText={touched.role && errors.role}
                   >
                     <option value="" />
-                    {countries.map((option) => (
-                      <option key={option.code} value={option.label}>
-                        {option.label}
+                    {roles.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
                       </option>
                     ))}
                   </TextField>

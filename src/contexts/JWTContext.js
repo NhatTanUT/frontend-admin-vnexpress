@@ -73,7 +73,9 @@ function AuthProvider({ children }) {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await axios.get('/api/account/my-account');
+          const response = await axios1.get('http://localhost:7000/api/user/getCurrentUser', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
           const { user } = response.data;
 
           dispatch({
@@ -115,7 +117,7 @@ function AuthProvider({ children }) {
     const { user } = response.data;
     if (user.role !== 'admin') throw new Error('Invaild role');
     const accessToken = response.data.token;
-    // window.localStorage.setItem('accessToken', response.data.token);
+    window.localStorage.setItem('user', user);
     setSession(accessToken);
     dispatch({
       type: 'LOGIN',

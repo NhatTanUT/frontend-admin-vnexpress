@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { sentenceCase } from 'change-case';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
+import plusFill from '@iconify/icons-eva/plus-fill';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useSnackbar } from 'notistack5';
+
 import moment from 'moment';
+import { Icon } from '@iconify/react';
 import axios from 'axios';
 // material
-import { Box, Card, Divider, Skeleton, Container, Typography, Pagination } from '@material-ui/core';
+import { Box, Button, Card, Divider, Skeleton, Container, Typography, Pagination } from '@material-ui/core';
 // redux
 import { useDispatch, useSelector } from '../../redux/store';
 import { getPost, getRecentPosts } from '../../redux/slices/blog';
@@ -42,6 +47,8 @@ const SkeletonLoad = (
 
 export default function BlogPost() {
   const { themeStretch } = useSettings();
+  const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
   // const dispatch = useDispatch();
   const { title } = useParams();
   const [new1, setNew1] = useState({});
@@ -61,6 +68,20 @@ export default function BlogPost() {
     fetchData();
   }, []);
 
+  const handleClickDeletePost = async (event) => {
+    try {
+      const response = await axios.delete(`http://localhost:4000/api/post/${new1._id}`);
+      if (response.data.success === true) {
+        enqueueSnackbar('Delete post success', { variant: 'success' });
+        navigate(`${PATH_DASHBOARD.blog.posts}`);
+      } else {
+        enqueueSnackbar("Can't find post", { variant: 'success' });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Page title="Blog: Post Details | Minimal-UI">
       <Container maxWidth={themeStretch ? false : 'lg'}>
@@ -71,6 +92,11 @@ export default function BlogPost() {
             { name: 'Blog', href: PATH_DASHBOARD.blog.root },
             { name: sentenceCase(title) }
           ]}
+          action={
+            <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleClickDeletePost}>
+              Delete Post
+            </Button>
+          }
         />
 
         <div className="wrapper_post">
