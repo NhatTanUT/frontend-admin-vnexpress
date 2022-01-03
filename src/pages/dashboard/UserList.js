@@ -22,6 +22,7 @@ import {
   TablePagination
 } from '@material-ui/core';
 // redux
+import axios from 'axios';
 import { useDispatch, useSelector } from '../../redux/store';
 import { getUserList, deleteUser } from '../../redux/slices/user';
 // routes
@@ -40,10 +41,10 @@ import { UserListHead, UserListToolbar, UserMoreMenu } from '../../components/_d
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
+  { id: 'email', label: 'Email', alignRight: false },
   { id: 'role', label: 'Role', alignRight: false },
-  { id: 'isVerified', label: 'Verified', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
+  // { id: 'isVerified', label: 'Verified', alignRight: false },
+  // { id: 'status', label: 'Status', alignRight: false },
   { id: '' }
 ];
 
@@ -89,10 +90,33 @@ export default function UserList() {
   const [orderBy, setOrderBy] = useState('name');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [userList1, setUser1] = useState([]);
 
   useEffect(() => {
     dispatch(getUserList());
   }, [dispatch]);
+
+  // var filterdUsers1 = [];
+  // Get list user
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(async () => {
+    async function fetchData() {
+      try {
+        const token = window.localStorage.getItem('accessToken');
+        console.log(token);
+        const temp = await axios.get('http://localhost:7000/api/user/getAllUsers', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        // console.log(temp.data.users);
+        setUser1(temp.data.users);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchData();
+  }, []);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -109,11 +133,11 @@ export default function UserList() {
     setSelected([]);
   };
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+  const handleClick = (event, _id) => {
+    const selectedIndex = selected.indexOf(_id);
     let newSelected = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, _id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -185,21 +209,25 @@ export default function UserList() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
-                    const isItemSelected = selected.indexOf(name) !== -1;
+                  {userList1.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { _id, email, avatar, id, name, role, status } = row;
+                    // const { _id, email, avatar, id, name, role, status, company, avatarUrl, isVerified } = row;
+                    const avatarUrl = avatar;
+                    console.log(row);
+                    // console.log(_id, email, avatar, id, name, role, status, company, avatarUrl, isVerified);
+                    const isItemSelected = selected.indexOf(_id) !== -1;
 
                     return (
                       <TableRow
                         hover
-                        key={id}
+                        key={_id}
                         tabIndex={-1}
                         role="checkbox"
                         selected={isItemSelected}
                         aria-checked={isItemSelected}
                       >
                         <TableCell padding="checkbox">
-                          <Checkbox checked={isItemSelected} onChange={(event) => handleClick(event, name)} />
+                          <Checkbox checked={isItemSelected} onChange={(event) => handleClick(event, _id)} />
                         </TableCell>
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
@@ -209,20 +237,20 @@ export default function UserList() {
                             </Typography>
                           </Stack>
                         </TableCell>
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{email}</TableCell>
                         <TableCell align="left">{role}</TableCell>
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-                        <TableCell align="left">
+                        {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
+                        {/* <TableCell align="left">
                           <Label
                             variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
                             color={(status === 'banned' && 'error') || 'success'}
                           >
                             {sentenceCase(status)}
                           </Label>
-                        </TableCell>
+                        </TableCell> */}
 
                         <TableCell align="right">
-                          <UserMoreMenu onDelete={() => handleDeleteUser(id)} userName={name} />
+                          <UserMoreMenu onDelete={() => handleDeleteUser(_id)} userName={name} id={_id} />
                         </TableCell>
                       </TableRow>
                     );

@@ -70,16 +70,20 @@ BlogPostCard.propTypes = {
 };
 
 export default function BlogPostCard({ post, index }) {
-  const { cover, title, view, comment, share, author, createdAt } = post;
-  const linkTo = `${PATH_DASHBOARD.blog.root}/post/${paramCase(title)}`;
+  const { thumbnailUrl, title, slug, /* view, comment, share, */ createdAt } = post;
+  const author = {
+    name: 'Nguyen Van Tan',
+    avatarUrl: 'http://localhost:3000/static/mock-images/avatars/avatar_6.jpg'
+  };
+  const linkTo = `${PATH_DASHBOARD.blog.root}/post/${slug}`;
   const latestPostLarge = index === 0;
   const latestPost = index === 1 || index === 2;
 
-  const POST_INFO = [
-    { number: comment, icon: messageCircleFill },
-    { number: view, icon: eyeFill },
-    { number: share, icon: shareFill }
-  ];
+  // const POST_INFO = [
+  //   { number: comment, icon: messageCircleFill },
+  //   { number: view, icon: eyeFill },
+  //   { number: share, icon: shareFill }
+  // ];
 
   return (
     <Grid item xs={12} sm={latestPostLarge ? 12 : 6} md={latestPostLarge ? 6 : 3}>
@@ -131,7 +135,7 @@ export default function BlogPostCard({ post, index }) {
             }}
           />
 
-          <CoverImgStyle alt={title} src={cover} />
+          <CoverImgStyle alt={title} src={thumbnailUrl} />
         </CardMediaStyle>
 
         <CardContent
@@ -160,7 +164,7 @@ export default function BlogPostCard({ post, index }) {
             {title}
           </TitleStyle>
 
-          <InfoStyle>
+          {/* <InfoStyle>
             {POST_INFO.map((info, index) => (
               <Box
                 key={index}
@@ -177,7 +181,7 @@ export default function BlogPostCard({ post, index }) {
                 <Typography variant="caption">{fShortenNumber(info.number)}</Typography>
               </Box>
             ))}
-          </InfoStyle>
+          </InfoStyle> */}
         </CardContent>
       </Card>
     </Grid>

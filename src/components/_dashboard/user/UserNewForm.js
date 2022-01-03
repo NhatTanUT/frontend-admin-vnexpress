@@ -54,8 +54,8 @@ export default function UserNewForm({ isEdit, currentUser }) {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      name: currentUser?.name || '',
-      email: currentUser?.email || '',
+      name: (isEdit && currentUser.name) || '',
+      email: (isEdit && currentUser.email) || '',
       phoneNumber: currentUser?.phoneNumber || '',
       address: currentUser?.address || '',
       country: currentUser?.country || '',
@@ -66,9 +66,10 @@ export default function UserNewForm({ isEdit, currentUser }) {
       isVerified: currentUser?.isVerified || true,
       status: currentUser?.status,
       company: currentUser?.company || '',
-      role: currentUser?.role || ''
+      role: (isEdit && currentUser.role) || ''
     },
     validationSchema: NewUserSchema,
+    // Create user or Edit user
     onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
       try {
         await fakeRequest(500);
@@ -114,35 +115,37 @@ export default function UserNewForm({ isEdit, currentUser }) {
                 </Label>
               )}
 
-              <Box sx={{ mb: 5 }}>
-                <UploadAvatar
-                  accept="image/*"
-                  file={values.avatarUrl}
-                  maxSize={3145728}
-                  onDrop={handleDrop}
-                  error={Boolean(touched.avatarUrl && errors.avatarUrl)}
-                  caption={
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        mt: 2,
-                        mx: 'auto',
-                        display: 'block',
-                        textAlign: 'center',
-                        color: 'text.secondary'
-                      }}
-                    >
-                      Allowed *.jpeg, *.jpg, *.png, *.gif
-                      <br /> max size of {fData(3145728)}
-                    </Typography>
-                  }
-                />
-                <FormHelperText error sx={{ px: 2, textAlign: 'center' }}>
-                  {touched.avatarUrl && errors.avatarUrl}
-                </FormHelperText>
-              </Box>
-
               {isEdit && (
+                <Box sx={{ mb: 5 }}>
+                  <UploadAvatar
+                    accept="image/*"
+                    file={values.avatarUrl}
+                    maxSize={3145728}
+                    onDrop={handleDrop}
+                    error={Boolean(touched.avatarUrl && errors.avatarUrl)}
+                    caption={
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          mt: 2,
+                          mx: 'auto',
+                          display: 'block',
+                          textAlign: 'center',
+                          color: 'text.secondary'
+                        }}
+                      >
+                        Allowed *.jpeg, *.jpg, *.png, *.gif
+                        <br /> max size of {fData(3145728)}
+                      </Typography>
+                    }
+                  />
+                  <FormHelperText error sx={{ px: 2, textAlign: 'center' }}>
+                    {touched.avatarUrl && errors.avatarUrl}
+                  </FormHelperText>
+                </Box>
+              )}
+
+              {/* {isEdit && (
                 <FormControlLabel
                   labelPlacement="start"
                   control={
@@ -163,9 +166,9 @@ export default function UserNewForm({ isEdit, currentUser }) {
                   }
                   sx={{ mx: 0, mb: 3, width: 1, justifyContent: 'space-between' }}
                 />
-              )}
+              )} */}
 
-              <FormControlLabel
+              {/* <FormControlLabel
                 labelPlacement="start"
                 control={<Switch {...getFieldProps('isVerified')} checked={values.isVerified} />}
                 label={
@@ -179,7 +182,7 @@ export default function UserNewForm({ isEdit, currentUser }) {
                   </>
                 }
                 sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
-              />
+              /> */}
             </Card>
           </Grid>
 
@@ -203,7 +206,7 @@ export default function UserNewForm({ isEdit, currentUser }) {
                   />
                 </Stack>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 3, sm: 2 }}>
+                {/* <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 3, sm: 2 }}>
                   <TextField
                     fullWidth
                     label="Phone Number"
@@ -256,23 +259,41 @@ export default function UserNewForm({ isEdit, currentUser }) {
                     helperText={touched.address && errors.address}
                   />
                   <TextField fullWidth label="Zip/Code" {...getFieldProps('zipCode')} />
-                </Stack>
+                </Stack> */}
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 3, sm: 2 }}>
-                  <TextField
+                  {/* <TextField
                     fullWidth
                     label="Company"
                     {...getFieldProps('company')}
                     error={Boolean(touched.company && errors.company)}
                     helperText={touched.company && errors.company}
-                  />
-                  <TextField
+                  /> */}
+                  {/* <TextField
                     fullWidth
                     label="Role"
                     {...getFieldProps('role')}
                     error={Boolean(touched.role && errors.role)}
                     helperText={touched.role && errors.role}
-                  />
+                  /> */}
+
+                  <TextField
+                    select
+                    fullWidth
+                    label="Role"
+                    placeholder="Role"
+                    {...getFieldProps('role')}
+                    SelectProps={{ native: true }}
+                    error={Boolean(touched.role && errors.role)}
+                    helperText={touched.role && errors.role}
+                  >
+                    <option value="" />
+                    {countries.map((option) => (
+                      <option key={option.code} value={option.label}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </TextField>
                 </Stack>
 
                 <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>

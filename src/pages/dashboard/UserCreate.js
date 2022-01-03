@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { paramCase } from 'change-case';
 import { useParams, useLocation } from 'react-router-dom';
 // material
@@ -6,6 +7,7 @@ import { Container } from '@material-ui/core';
 // redux
 import { useDispatch, useSelector } from '../../redux/store';
 import { getUserList } from '../../redux/slices/user';
+
 // routes
 import { PATH_DASHBOARD } from '../../routes/paths';
 // hooks
@@ -16,6 +18,7 @@ import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
 import UserNewForm from '../../components/_dashboard/user/UserNewForm';
 
 // ----------------------------------------------------------------------
+// Lười sửa nên để tạm biến name để lưu id nha mọi người.
 
 export default function UserCreate() {
   const { themeStretch } = useSettings();
@@ -24,7 +27,27 @@ export default function UserCreate() {
   const { name } = useParams();
   const { userList } = useSelector((state) => state.user);
   const isEdit = pathname.includes('edit');
-  const currentUser = userList.find((user) => paramCase(user.name) === name);
+  // const currentUser = userList.find((user) => paramCase(user.name) === name);
+  // console.log(name);
+  const [currentUser, setCurrentUser] = useState({});
+  useEffect(() => {
+    async function fetchData() {
+      let temp;
+      try {
+        const token = window.localStorage.getItem('accessToken');
+        temp = await axios.get(`http://localhost:7000/api/user/getCurrentUser/${name}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setCurrentUser(temp.data.user);
+      } catch (error) {
+        console.log(error);
+      }
+      // console.log(temp.data.user);
+    }
+    fetchData();
+  }, []);
 
   useEffect(() => {
     dispatch(getUserList());

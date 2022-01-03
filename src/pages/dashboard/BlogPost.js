@@ -1,6 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { sentenceCase } from 'change-case';
 import { useParams } from 'react-router-dom';
+import moment from 'moment';
+import axios from 'axios';
 // material
 import { Box, Card, Divider, Skeleton, Container, Typography, Pagination } from '@material-ui/core';
 // redux
@@ -40,14 +42,24 @@ const SkeletonLoad = (
 
 export default function BlogPost() {
   const { themeStretch } = useSettings();
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const { title } = useParams();
-  const { post, error, recentPosts } = useSelector((state) => state.blog);
+  const [new1, setNew1] = useState({});
+  // const { post, error, recentPosts } = useSelector((state) => state.blog);
+
+  // useEffect(() => {
+  //   dispatch(getPost(title));
+  //   dispatch(getRecentPosts(title));
+  // }, [dispatch, title]);
 
   useEffect(() => {
-    dispatch(getPost(title));
-    dispatch(getRecentPosts(title));
-  }, [dispatch, title]);
+    const fetchData = async () => {
+      const temp = await axios.get(`http://localhost:7000/api/post/getPostBySlug/${title}`);
+      console.log(temp.data);
+      setNew1(temp.data.post);
+    };
+    fetchData();
+  }, []);
 
   return (
     <Page title="Blog: Post Details | Minimal-UI">
@@ -61,7 +73,30 @@ export default function BlogPost() {
           ]}
         />
 
-        {post && (
+        <div className="wrapper_post">
+          <div className="entity_title">
+            <h1>
+              <a href="#">{new1.title}</a>
+            </h1>
+          </div>
+          {/* entity_title */}
+          <div className="entity_meta">
+            <a href="#">{moment(new1.createdAt).format('HH:mm [ngày] DD [tháng] MM')}</a>, Tác giả:
+            <a href="#" target="_self">
+              {' Tan Nguyen'}
+            </a>
+          </div>
+          <div className="entity_content">
+            <section
+              id="post-details"
+              className="not-found-controller"
+              // onMouseUp={handleSelectedText}
+              dangerouslySetInnerHTML={{ __html: new1.content }}
+            />
+          </div>
+        </div>
+
+        {/* {post && (
           <Card>
             <BlogPostHero post={post} />
 
@@ -94,13 +129,13 @@ export default function BlogPost() {
               <BlogPostCommentForm />
             </Box>
           </Card>
-        )}
+        )} */}
 
-        {!post && SkeletonLoad}
+        {/* {!post && SkeletonLoad}
 
-        {error && <Typography variant="h6">404 Post not found</Typography>}
+        {error && <Typography variant="h6">404 Post not found</Typography>} */}
 
-        {recentPosts.length > 0 && <BlogPostRecent posts={recentPosts} />}
+        {/* {recentPosts.length > 0 && <BlogPostRecent posts={recentPosts} />} */}
       </Container>
     </Page>
   );

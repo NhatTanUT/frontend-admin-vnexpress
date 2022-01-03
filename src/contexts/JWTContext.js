@@ -1,6 +1,7 @@
 import { createContext, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 // utils
+import axios1 from 'axios';
 import axios from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
 
@@ -107,12 +108,14 @@ function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axios.post('/api/account/login', {
+    const response = await axios1.post('http://localhost:10000/api/auth/login', {
       email,
       password
     });
-    const { accessToken, user } = response.data;
-
+    const { user } = response.data;
+    if (user.role !== 'admin') throw new Error('Invaild role');
+    const accessToken = response.data.token;
+    // window.localStorage.setItem('accessToken', response.data.token);
     setSession(accessToken);
     dispatch({
       type: 'LOGIN',

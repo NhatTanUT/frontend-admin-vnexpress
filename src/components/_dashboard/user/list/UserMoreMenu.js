@@ -18,7 +18,7 @@ UserMoreMenu.propTypes = {
   userName: PropTypes.string
 };
 
-export default function UserMoreMenu({ onDelete, userName }) {
+export default function UserMoreMenu({ onDelete, userName, id }) {
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -47,7 +47,7 @@ export default function UserMoreMenu({ onDelete, userName }) {
 
         <MenuItem
           component={RouterLink}
-          to={`${PATH_DASHBOARD.user.root}/${paramCase(userName)}/edit`}
+          to={`${PATH_DASHBOARD.user.root}/${paramCase(id)}/edit`}
           sx={{ color: 'text.secondary' }}
         >
           <ListItemIcon>
