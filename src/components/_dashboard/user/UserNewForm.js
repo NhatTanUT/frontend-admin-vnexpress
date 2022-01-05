@@ -50,8 +50,10 @@ export default function UserNewForm({ isEdit, currentUser }) {
     company: Yup.string().required('Company is required'),
     state: Yup.string().required('State is required'),
     city: Yup.string().required('City is required'),
-    role: Yup.string().required('Role Number is required'),
-    avatarUrl: Yup.mixed()
+    avatarUrl: Yup.mixed(),
+    password: Yup.string().min(6),
+    confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Passwords must match'),
+    role: Yup.string().required('Role is required')
   });
 
   const formik = useFormik({
@@ -69,7 +71,7 @@ export default function UserNewForm({ isEdit, currentUser }) {
       isVerified: currentUser?.isVerified || true,
       status: currentUser?.status,
       company: currentUser?.company || '',
-      role: (isEdit && currentUser.role) || ''
+      role: (isEdit && currentUser.role) || 'user'
     },
     validationSchema: NewUserSchema,
     // Create user or Edit user
@@ -128,9 +130,10 @@ export default function UserNewForm({ isEdit, currentUser }) {
             confirmPassword
           });
           console.log(response.data);
-          if (response.data.success) {
+          if (response.data.success === true) {
             enqueueSnackbar(!isEdit ? 'Create success' : 'Update success', { variant: 'success' });
-          } else {
+          } else if (response.data.success === false) {
+            enqueueSnackbar(response.data.msg, { variant: 'error' });
             console.log(response.data.msg);
           }
         } else if (event.target.role.value === 'admin') {
@@ -150,9 +153,10 @@ export default function UserNewForm({ isEdit, currentUser }) {
             }
           );
           console.log(response.data);
-          if (response.data.success) {
+          if (response.data.success === 'true') {
             enqueueSnackbar(!isEdit ? 'Create success' : 'Update success', { variant: 'success' });
           } else {
+            enqueueSnackbar(response.data.msg, { variant: 'warning' });
             console.log(response.data.msg);
           }
         }
@@ -171,20 +175,24 @@ export default function UserNewForm({ isEdit, currentUser }) {
         }
         bodyFormData.append('name', name1);
         bodyFormData.append('email', email);
-        bodyFormData.append('password', password);
-        bodyFormData.append('confirmPassword', confirmPassword);
+        if (password && confirmPassword) {
+          bodyFormData.append('password', password);
+          bodyFormData.append('confirmPassword', confirmPassword);
+        }
         bodyFormData.append('role', role);
 
         const response = await axios.patch(`http://localhost:5000/api/user/update/${name}`, bodyFormData, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (response.data.success) {
+        if (response.data.success === true) {
           enqueueSnackbar('Update success', { variant: 'success' });
+        } else if (response.data.success === false) {
+          enqueueSnackbar(response.data.msg, { variant: 'error' });
         }
       }
     } catch (error) {
-      console.log(error);
+      enqueueSnackbar(error.response.data.msg, { variant: 'error' });
     }
   };
 
