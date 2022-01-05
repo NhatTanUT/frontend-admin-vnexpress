@@ -70,6 +70,7 @@ function AuthProvider({ children }) {
       try {
         const accessToken = window.localStorage.getItem('accessToken');
 
+        console.log(accessToken);
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
