@@ -2,7 +2,8 @@ import { createContext, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 // utils
 import axios1 from 'axios';
-import axios from '../utils/axios';
+import { axiosInstance, baseURL } from '../_apis_/axiosClient';
+// import axios from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
 
 // ----------------------------------------------------------------------
@@ -69,14 +70,11 @@ function AuthProvider({ children }) {
     const initialize = async () => {
       try {
         const accessToken = window.localStorage.getItem('accessToken');
-
         console.log(accessToken);
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await axios1.get('http://localhost:7000/api/user/getCurrentUser', {
-            headers: { Authorization: `Bearer ${accessToken}` }
-          });
+          const response = await axiosInstance.get(`${baseURL.query}/user/getCurrentUser`);
           const { user } = response.data;
 
           dispatch({
@@ -111,15 +109,17 @@ function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axios1.post('http://localhost:10000/api/auth/login', {
+    const response = await axiosInstance.post(`${baseURL.auth}/auth/login`, {
       email,
       password
     });
     const { user } = response.data;
     if (user.role !== 'admin') throw new Error('Invaild role');
-    const accessToken = response.data.token;
+    const { accessToken, refreshToken } = response.data;
     window.localStorage.setItem('user', user);
+    console.log(response.data);
     setSession(accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
     dispatch({
       type: 'LOGIN',
       payload: {
@@ -129,7 +129,7 @@ function AuthProvider({ children }) {
   };
 
   const register = async (email, password, firstName, lastName) => {
-    const response = await axios.post('/api/account/register', {
+    const response = await axiosInstance.post('/api/account/register', {
       email,
       password,
       firstName,

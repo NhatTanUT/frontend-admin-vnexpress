@@ -36,6 +36,7 @@ import Scrollbar from '../../components/Scrollbar';
 import SearchNotFound from '../../components/SearchNotFound';
 import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
 import { UserListHead, UserListToolbar, UserMoreMenu } from '../../components/_dashboard/user/list';
+import { axiosInstance, baseURL } from '../../_apis_/axiosClient';
 
 // ----------------------------------------------------------------------
 
@@ -102,13 +103,7 @@ export default function UserList() {
   useEffect(async () => {
     async function fetchData() {
       try {
-        const token = window.localStorage.getItem('accessToken');
-        console.log(token);
-        const temp = await axios.get('http://localhost:7000/api/user/getAllUsers', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const temp = await axiosInstance.get('http://localhost:7000/api/user/getAllUsers');
         console.log(temp.data.users);
         setUser1(temp.data.users);
       } catch (error) {
